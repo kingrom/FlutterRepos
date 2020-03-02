@@ -70,6 +70,17 @@ class HttpConfig {
 /// debug模式下可以打印请求日志. DioUtil.openDebug().
 /// dio详细使用请查看dio官网(https://github.com/flutterchina/dio).
 class DioUtil {
+
+  static const httpHeaders = {
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'zh-CN,zh;q=0.9',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'User-Agent':
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1',
+  };
+
   static final DioUtil _singleton = DioUtil._init();
   static Dio _dio;
 
@@ -86,7 +97,11 @@ class DioUtil {
   String _dataKey = "data";
 
   /// Options.
-  Options _options = getDefOptions();
+  static Options _options = Options(
+    connectTimeout: 5000,
+    receiveTimeout: 5000,
+    headers: httpHeaders,
+  );
 
   /// PEM证书内容.
   String _pem;
@@ -109,7 +124,7 @@ class DioUtil {
   }
 
   DioUtil._init() {
-    _dio = new Dio(_options);
+    _dio = Dio();
   }
 
   /// 打开debug模式.
@@ -124,38 +139,38 @@ class DioUtil {
   }
 
   /// set Config.
-  void setConfig(HttpConfig config) {
-    _statusKey = config.status ?? _statusKey;
-    _codeKey = config.code ?? _codeKey;
-    _msgKey = config.msg ?? _msgKey;
-    _dataKey = config.data ?? _dataKey;
-    _mergeOption(config.options);
-    _pem = config.pem ?? _pem;
-    if (_dio != null) {
-      _dio.options = _options;
-      if (_pem != null) {
-        _dio.onHttpClientCreate = (HttpClient client) {
-          client.badCertificateCallback =
-              (X509Certificate cert, String host, int port) {
-            if (cert.pem == _pem) {
-              // 证书一致，则放行
-              return true;
-            }
-            return false;
-          };
-        };
-      }
-      if (_pKCSPath != null) {
-        _dio.onHttpClientCreate = (HttpClient client) {
-          SecurityContext sc = new SecurityContext();
-          //file为证书路径
-          sc.setTrustedCertificates(_pKCSPath, password: _pKCSPwd);
-          HttpClient httpClient = new HttpClient(context: sc);
-          return httpClient;
-        };
-      }
-    }
-  }
+//  void setConfig(HttpConfig config) {
+//    _statusKey = config.status ?? _statusKey;
+//    _codeKey = config.code ?? _codeKey;
+//    _msgKey = config.msg ?? _msgKey;
+//    _dataKey = config.data ?? _dataKey;
+//    _mergeOption(config.options);
+//    _pem = config.pem ?? _pem;
+//    if (_dio != null) {
+//      _dio.options = _options;
+//      if (_pem != null) {
+//        _dio.onHttpClientCreate = (HttpClient client) {
+//          client.badCertificateCallback =
+//              (X509Certificate cert, String host, int port) {
+//            if (cert.pem == _pem) {
+//              // 证书一致，则放行
+//              return true;
+//            }
+//            return false;
+//          };
+//        };
+//      }
+//      if (_pKCSPath != null) {
+//        _dio.onHttpClientCreate = (HttpClient client) {
+//          SecurityContext sc = new SecurityContext();
+//          //file为证书路径
+//          sc.setTrustedCertificates(_pKCSPath, password: _pKCSPwd);
+//          HttpClient httpClient = new HttpClient(context: sc);
+//          return httpClient;
+//        };
+//      }
+//    }
+//  }
 
   /// Make http request with options.
   /// [method] The request method.
@@ -269,24 +284,24 @@ class DioUtil {
     ));
   }
 
-  /// Download the file and save it in local. The default http method is "GET",you can custom it by [Options.method].
-  /// [urlPath]: The file url.
-  /// [savePath]: The path to save the downloading file later.
-  /// [onProgress]: The callback to listen downloading progress.please refer to [OnDownloadProgress].
-  Future<Response> download(
-    String urlPath,
-    savePath, {
-    OnDownloadProgress onProgress,
-    CancelToken cancelToken,
-    data,
-    Options options,
-  }) {
-    return _dio.download(urlPath, savePath,
-        onProgress: onProgress,
-        cancelToken: cancelToken,
-        data: data,
-        options: options);
-  }
+//  /// Download the file and save it in local. The default http method is "GET",you can custom it by [Options.method].
+//  /// [urlPath]: The file url.
+//  /// [savePath]: The path to save the downloading file later.
+//  /// [onProgress]: The callback to listen downloading progress.please refer to [OnDownloadProgress].
+//  Future<Response> download(
+//    String urlPath,
+//    savePath, {
+//    OnDownloadProgress onProgress,
+//    CancelToken cancelToken,
+//    data,
+//    Options options,
+//  }) {
+//    return _dio.download(urlPath, savePath,
+//        onProgress: onProgress,
+//        cancelToken: cancelToken,
+//        data: data,
+//        options: options);
+//  }
 
   /// decode response data.
   Map<String, dynamic> _decodeData(Response response) {
@@ -308,19 +323,19 @@ class DioUtil {
   }
 
   /// merge Option.
-  void _mergeOption(Options opt) {
-    _options.method = opt.method ?? _options.method;
-    _options.headers = (new Map.from(_options.headers))..addAll(opt.headers);
-    _options.baseUrl = opt.baseUrl ?? _options.baseUrl;
-    _options.connectTimeout = opt.connectTimeout ?? _options.connectTimeout;
-    _options.receiveTimeout = opt.receiveTimeout ?? _options.receiveTimeout;
-    _options.responseType = opt.responseType ?? _options.responseType;
-    _options.data = opt.data ?? _options.data;
-    _options.extra = (new Map.from(_options.extra))..addAll(opt.extra);
-    _options.contentType = opt.contentType ?? _options.contentType;
-    _options.validateStatus = opt.validateStatus ?? _options.validateStatus;
-    _options.followRedirects = opt.followRedirects ?? _options.followRedirects;
-  }
+//  void _mergeOption(Options opt) {
+//    _options.method = opt.method ?? _options.method;
+//    _options.headers = (new Map.from(_options.headers))..addAll(opt.headers);
+//    _options.baseUrl = opt.baseUrl ?? _options.baseUrl;
+//    _options.connectTimeout = opt.connectTimeout ?? _options.connectTimeout;
+//    _options.receiveTimeout = opt.receiveTimeout ?? _options.receiveTimeout;
+//    _options.responseType = opt.responseType ?? _options.responseType;
+//    _options.data = opt.data ?? _options.data;
+//    _options.extra = (new Map.from(_options.extra))..addAll(opt.extra);
+//    _options.contentType = opt.contentType ?? _options.contentType;
+//    _options.validateStatus = opt.validateStatus ?? _options.validateStatus;
+//    _options.followRedirects = opt.followRedirects ?? _options.followRedirects;
+//  }
 
   /// print Http Log.
   void _printHttpLog(Response response) {
@@ -328,26 +343,16 @@ class DioUtil {
       return;
     }
     try {
-      print("----------------Http Log----------------" +
-          "\n[statusCode]:   " +
-          response.statusCode.toString() +
-          "\n[request   ]:   " +
-          _getOptionsStr(response.request));
+//      print("----------------Http Log----------------" +
+//          "\n[statusCode]:   " +
+//          response.statusCode.toString() +
+//          "\n[request   ]:   " +
+//          _getOptionsStr(response.request));
       _printDataStr("reqdata ", response.request.data);
       _printDataStr("response", response.data);
     } catch (ex) {
       print("Http Log" + " error......");
     }
-  }
-
-  /// get Options Str.
-  String _getOptionsStr(Options request) {
-    return "method: " +
-        request.method +
-        "  baseUrl: " +
-        request.baseUrl +
-        "  path: " +
-        request.path;
   }
 
   /// print Data Str.
@@ -371,18 +376,8 @@ class DioUtil {
 
   /// create new dio.
   static Dio createNewDio([Options options]) {
-    options = options ?? getDefOptions();
-    Dio dio = new Dio(options);
+    options = options ?? _options;
+    Dio dio = new Dio();
     return dio;
-  }
-
-  /// get Def Options.
-  static Options getDefOptions() {
-    Options options = new Options();
-    options.contentType =
-        ContentType.parse("application/x-www-form-urlencoded");
-    options.connectTimeout = 1000 * 30;
-    options.receiveTimeout = 1000 * 30;
-    return options;
   }
 }
